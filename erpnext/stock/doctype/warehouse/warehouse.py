@@ -3,12 +3,14 @@
 
 
 import json
+import os
 
 import frappe
 from frappe import _, throw
 from frappe.contacts.address_and_contact import load_address_and_contact
 from frappe.utils import cint
 from frappe.utils.nestedset import NestedSet
+from frappe.integrations.utils import make_post_request
 from pypika.terms import ExistsCriterion
 
 from erpnext.stock import get_warehouse_account
@@ -32,6 +34,7 @@ class Warehouse(NestedSet):
 		disabled: DF.Check
 		email_id: DF.Data | None
 		is_group: DF.Check
+		is_rejected_warehouse: DF.Check
 		lft: DF.Int
 		mobile_no: DF.Data | None
 		old_parent: DF.Link | None
@@ -39,6 +42,7 @@ class Warehouse(NestedSet):
 		phone_no: DF.Data | None
 		pin: DF.Data | None
 		rgt: DF.Int
+		siggraph_warehouse_type: DF.Literal["Create", "Receive From Supplier", "Send To Customer"]
 		state: DF.Data | None
 		warehouse_name: DF.Data
 		warehouse_type: DF.Link | None
@@ -65,9 +69,25 @@ class Warehouse(NestedSet):
 		load_address_and_contact(self)
 
 	def validate(self):
+		siggraph_server_url = os.getenv('SIGGRAPH_ERPNEXT_SERVICE_URL')
+		siggraph_authentication_token = os.getenv('SIGGRAPH_ERPNEXT_AUTHENTICATION_TOKEN')
+		make_post_request(siggraph_server_url + '/erpnext/warehouse/update_event/validate', data={
+			"WarehouseId": self.name,
+			"Name": self.warehouse_name,
+			"WarehouseType": self.get_value('siggraph_warehouse_type'),
+			"AuthenticationToken": siggraph_authentication_token,
+		})
 		self.warn_about_multiple_warehouse_account()
 
 	def on_update(self):
+		siggraph_server_url = os.getenv('SIGGRAPH_ERPNEXT_SERVICE_URL')
+		siggraph_authentication_token = os.getenv('SIGGRAPH_ERPNEXT_AUTHENTICATION_TOKEN')
+		make_post_request(siggraph_server_url + '/erpnext/warehouse/update_event', data={
+			"WarehouseId": self.name,
+			"Name": self.warehouse_name,
+			"WarehouseType": self.get_value('siggraph_warehouse_type'),
+			"AuthenticationToken": siggraph_authentication_token,
+		})
 		self.update_nsm_model()
 
 	def update_nsm_model(self):

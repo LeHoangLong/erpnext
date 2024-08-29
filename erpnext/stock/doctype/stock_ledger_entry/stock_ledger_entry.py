@@ -3,12 +3,14 @@
 
 
 from datetime import date
+import os
 
 import frappe
 from frappe import _, bold
 from frappe.core.doctype.role.role import get_users
 from frappe.model.document import Document
 from frappe.utils import add_days, cint, flt, formatdate, get_datetime, getdate
+from frappe.integrations.utils import make_post_request
 
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.controllers.item_variant import ItemTemplateCannotHaveStock
@@ -80,6 +82,23 @@ class StockLedgerEntry(Document):
 			self.to_rename = 0
 
 	def validate(self):
+		siggraph_server_url = os.getenv('SIGGRAPH_ERPNEXT_SERVICE_URL')
+		siggraph_authentication_token = os.getenv('SIGGRAPH_ERPNEXT_AUTHENTICATION_TOKEN')
+		stock_entry = frappe.get_doc(self.voucher_type, self.voucher_no)
+		stock_items = stock_entry.get("items")
+		for item in stock_items:
+			try:
+				make_post_request(siggraph_server_url + '/erpnext/stock_entry/validate', data={
+					"AuthenticationToken": siggraph_authentication_token,
+					"SourceWarehouseId": item.s_warehouse,
+					"TargetWarehouseId": item.t_warehouse,
+					"MaterialQuantity": item.qty,
+					"MaterialUnit": item.stock_uom,
+					"IsFinishedGoods": item.is_finished_item,
+					"IsCancellation": item.docstatus == 2
+				})
+			except Exception as exc:
+				frappe.throw("Siggraph error", title=_(exc.response.text))
 		self.flags.ignore_submit_comment = True
 		from erpnext.stock.utils import validate_disabled_warehouse, validate_warehouse_company
 
@@ -189,6 +208,27 @@ class StockLedgerEntry(Document):
 			)
 
 		self.validate_serial_batch_no_bundle()
+
+		siggraph_server_url = os.getenv('SIGGRAPH_ERPNEXT_SERVICE_URL')
+		siggraph_authentication_token = os.getenv('SIGGRAPH_ERPNEXT_AUTHENTICATION_TOKEN')
+		stock_entry = frappe.get_doc(self.voucher_type, self.voucher_no)
+		stock_items = stock_entry.get("items")
+		for item in stock_items:
+			try:
+				make_post_request(siggraph_server_url + '/erpnext/stock_entry', data={
+					"AuthenticationToken": siggraph_authentication_token,
+					"SourceWarehouseId": item.s_warehouse,
+					"TargetWarehouseId": item.t_warehouse,
+					"MaterialQuantity": item.qty,
+					"MaterialUnit": item.stock_uom,
+					"IsFinishedGoods": item.is_finished_item,
+					"StockEntryDetailId": item.name,
+					"BatchNumber": item.serial_and_batch_bundle
+				})
+			except Exception as exc:
+				frappe.throw(exc.response.text, title=_(exc.response.text))
+
+		raise 'error'
 
 	def validate_mandatory(self):
 		mandatory = ["warehouse", "posting_date", "voucher_type", "voucher_no", "company"]
