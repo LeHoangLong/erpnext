@@ -24,6 +24,7 @@
   "prospect_name",
   "account_manager",
   "image",
+  "siggraphcustomerpublickey",
   "defaults_tab",
   "default_currency",
   "default_bank_account",
@@ -581,6 +582,12 @@
    "no_copy": 1,
    "options": "Prospect",
    "print_hide": 1
+  },
+  {
+   "fieldname": "siggraphcustomerpublickey",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "SigGraphCustomerPublicKey"
   }
  ],
  "icon": "fa fa-user",
@@ -594,7 +601,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-06-17 03:24:59.612974",
+ "modified": "2024-08-29 18:34:46.758120",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

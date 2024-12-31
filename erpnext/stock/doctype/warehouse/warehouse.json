@@ -11,6 +11,7 @@
   "disabled",
   "warehouse_name",
   "siggraph_warehouse_type",
+  "customer",
   "column_break_3",
   "is_group",
   "parent_warehouse",
@@ -263,15 +264,21 @@
    "fieldname": "siggraph_warehouse_type",
    "fieldtype": "Select",
    "label": "SigGraph warehouse type",
-   "options": "Create\nReceive From Supplier\nSend To Customer",
+   "options": "Create\nReceive From Supplier\nSend To Customer\nInternal",
    "reqd": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-08-16 19:08:29.022678",
+ "modified": "2024-12-12 11:48:46.644844",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",

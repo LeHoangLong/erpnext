@@ -221,14 +221,15 @@ class StockLedgerEntry(Document):
 					"TargetWarehouseId": item.t_warehouse,
 					"MaterialQuantity": item.qty,
 					"MaterialUnit": item.stock_uom,
+					"MaterialName": item.item_code,
 					"IsFinishedGoods": item.is_finished_item,
 					"StockEntryDetailId": item.name,
 					"BatchNumber": item.serial_and_batch_bundle
+				}, headers={
+					"idempotency-key": item.name,
 				})
 			except Exception as exc:
 				frappe.throw(exc.response.text, title=_(exc.response.text))
-
-		raise 'error'
 
 	def validate_mandatory(self):
 		mandatory = ["warehouse", "posting_date", "voucher_type", "voucher_no", "company"]

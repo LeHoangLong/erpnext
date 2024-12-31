@@ -30,6 +30,7 @@ class Warehouse(NestedSet):
 		address_line_2: DF.Data | None
 		city: DF.Data | None
 		company: DF.Link
+		customer: DF.Link | None
 		default_in_transit_warehouse: DF.Link | None
 		disabled: DF.Check
 		email_id: DF.Data | None
@@ -42,7 +43,7 @@ class Warehouse(NestedSet):
 		phone_no: DF.Data | None
 		pin: DF.Data | None
 		rgt: DF.Int
-		siggraph_warehouse_type: DF.Literal["Create", "Receive From Supplier", "Send To Customer"]
+		siggraph_warehouse_type: DF.Literal["Create", "Receive From Supplier", "Send To Customer", "Internal"]
 		state: DF.Data | None
 		warehouse_name: DF.Data
 		warehouse_type: DF.Link | None
@@ -71,22 +72,31 @@ class Warehouse(NestedSet):
 	def validate(self):
 		siggraph_server_url = os.getenv('SIGGRAPH_ERPNEXT_SERVICE_URL')
 		siggraph_authentication_token = os.getenv('SIGGRAPH_ERPNEXT_AUTHENTICATION_TOKEN')
+		sig_graph_public_key = frappe.get_cached_value("Customer", self.customer, "siggraphcustomerpublickey")
+		customer_name = frappe.get_cached_value("Customer", self.customer, "customer_name")
 		make_post_request(siggraph_server_url + '/erpnext/warehouse/update_event/validate', data={
 			"WarehouseId": self.name,
 			"Name": self.warehouse_name,
 			"WarehouseType": self.get_value('siggraph_warehouse_type'),
 			"AuthenticationToken": siggraph_authentication_token,
+			"CustomerName": customer_name,
+			"CustomerSigGraphPublicKey": sig_graph_public_key,
 		})
 		self.warn_about_multiple_warehouse_account()
 
 	def on_update(self):
 		siggraph_server_url = os.getenv('SIGGRAPH_ERPNEXT_SERVICE_URL')
 		siggraph_authentication_token = os.getenv('SIGGRAPH_ERPNEXT_AUTHENTICATION_TOKEN')
+		sig_graph_public_key = frappe.get_cached_value("Customer", self.customer, "siggraphcustomerpublickey")
+		customer_name = frappe.get_cached_value("Customer", self.customer, "customer_name")
+
 		make_post_request(siggraph_server_url + '/erpnext/warehouse/update_event', data={
 			"WarehouseId": self.name,
 			"Name": self.warehouse_name,
 			"WarehouseType": self.get_value('siggraph_warehouse_type'),
 			"AuthenticationToken": siggraph_authentication_token,
+			"CustomerName": customer_name,
+			"CustomerSigGraphPublicKey": sig_graph_public_key
 		})
 		self.update_nsm_model()
 
