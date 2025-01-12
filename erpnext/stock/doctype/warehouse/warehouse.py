@@ -43,8 +43,9 @@ class Warehouse(NestedSet):
 		phone_no: DF.Data | None
 		pin: DF.Data | None
 		rgt: DF.Int
-		siggraph_warehouse_type: DF.Literal["Create", "Receive From Supplier", "Send To Customer", "Internal"]
+		siggraph_warehouse_type: DF.Literal["Create", "Sent From External", "Received From External", "Sent To External", "Received By External", "Internal"]
 		state: DF.Data | None
+		supplier: DF.Link | None
 		warehouse_name: DF.Data
 		warehouse_type: DF.Link | None
 	# end: auto-generated types
@@ -72,15 +73,25 @@ class Warehouse(NestedSet):
 	def validate(self):
 		siggraph_server_url = os.getenv('SIGGRAPH_ERPNEXT_SERVICE_URL')
 		siggraph_authentication_token = os.getenv('SIGGRAPH_ERPNEXT_AUTHENTICATION_TOKEN')
-		sig_graph_public_key = frappe.get_cached_value("Customer", self.customer, "siggraphcustomerpublickey")
+		warehouse_type = self.get_value('siggraph_warehouse_type')
+		sig_graph_public_key = None
+		if warehouse_type == "Sent To External":
+			sig_graph_public_key = frappe.get_cached_value("Customer", self.customer, "siggraphcustomerpublickey")
+		elif warehouse_type == "Sent From External":
+			sig_graph_public_key = frappe.get_cached_value("Supplier", self.supplier, "siggraph_supplier_public_key")
+
 		customer_name = frappe.get_cached_value("Customer", self.customer, "customer_name")
 		make_post_request(siggraph_server_url + '/erpnext/warehouse/update_event/validate', data={
 			"WarehouseId": self.name,
 			"Name": self.warehouse_name,
-			"WarehouseType": self.get_value('siggraph_warehouse_type'),
 			"AuthenticationToken": siggraph_authentication_token,
 			"CustomerName": customer_name,
-			"CustomerSigGraphPublicKey": sig_graph_public_key,
+			"ExternalPublicKey": sig_graph_public_key,
+			"IsSentToExternalWarehouse": warehouse_type == "Sent To External",
+			"IsReceivedByExternalWarehouse": warehouse_type == "Received By External",
+			"IsSentFromExternalWarehouse": warehouse_type == "Sent From External",
+			"IsReceivedFromExternalWarehouse": warehouse_type == "Received From External",
+			"IsFinishedGoodWarehouse": warehouse_type == "Create",
 		})
 		self.warn_about_multiple_warehouse_account()
 
@@ -89,14 +100,25 @@ class Warehouse(NestedSet):
 		siggraph_authentication_token = os.getenv('SIGGRAPH_ERPNEXT_AUTHENTICATION_TOKEN')
 		sig_graph_public_key = frappe.get_cached_value("Customer", self.customer, "siggraphcustomerpublickey")
 		customer_name = frappe.get_cached_value("Customer", self.customer, "customer_name")
+		warehouse_type = self.get_value('siggraph_warehouse_type')
+		sig_graph_public_key = None
+		if warehouse_type == "Sent To External":
+			sig_graph_public_key = frappe.get_cached_value("Customer", self.customer, "siggraphcustomerpublickey")
+		elif warehouse_type == "Sent From External":
+			sig_graph_public_key = frappe.get_cached_value("Supplier", self.supplier, "siggraph_supplier_public_key")
+
 
 		make_post_request(siggraph_server_url + '/erpnext/warehouse/update_event', data={
 			"WarehouseId": self.name,
 			"Name": self.warehouse_name,
-			"WarehouseType": self.get_value('siggraph_warehouse_type'),
+			"IsSentToExternalWarehouse": warehouse_type == "Sent To External",
+			"IsReceivedByExternalWarehouse": warehouse_type == "Received By External",
+			"IsSentFromExternalWarehouse": warehouse_type == "Sent From External",
+			"IsReceivedFromExternalWarehouse": warehouse_type == "Received From External",
+			"IsFinishedGoodWarehouse": warehouse_type == "Create",
 			"AuthenticationToken": siggraph_authentication_token,
 			"CustomerName": customer_name,
-			"CustomerSigGraphPublicKey": sig_graph_public_key
+			"ExternalPublicKey": sig_graph_public_key
 		})
 		self.update_nsm_model()
 

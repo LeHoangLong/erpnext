@@ -13,6 +13,7 @@
   "naming_series",
   "supplier_name",
   "country",
+  "siggraph_supplier_public_key",
   "column_break0",
   "supplier_group",
   "supplier_type",
@@ -473,6 +474,11 @@
   {
    "fieldname": "column_break_mglr",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "siggraph_supplier_public_key",
+   "fieldtype": "Text",
+   "label": "SigGraph Supplier Public Key"
   }
  ],
  "icon": "fa fa-user",
@@ -485,7 +491,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-05-08 18:02:57.342931",
+ "modified": "2024-12-31 10:40:48.417995",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

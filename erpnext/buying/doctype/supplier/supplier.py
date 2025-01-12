@@ -26,13 +26,10 @@ class Supplier(TransactionBase):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
-		from frappe.types import DF
-
-		from erpnext.accounts.doctype.allowed_to_transact_with.allowed_to_transact_with import (
-			AllowedToTransactWith,
-		)
+		from erpnext.accounts.doctype.allowed_to_transact_with.allowed_to_transact_with import AllowedToTransactWith
 		from erpnext.accounts.doctype.party_account.party_account import PartyAccount
 		from erpnext.utilities.doctype.portal_user.portal_user import PortalUser
+		from frappe.types import DF
 
 		accounts: DF.Table[PartyAccount]
 		allow_purchase_invoice_creation_without_purchase_order: DF.Check
@@ -60,6 +57,7 @@ class Supplier(TransactionBase):
 		primary_address: DF.Text | None
 		release_date: DF.Date | None
 		represents_company: DF.Link | None
+		siggraph_supplier_public_key: DF.Text | None
 		supplier_details: DF.Text | None
 		supplier_group: DF.Link | None
 		supplier_name: DF.Data
