@@ -92,6 +92,7 @@ class StockLedgerEntry(Document):
 					"AuthenticationToken": siggraph_authentication_token,
 					"SourceWarehouseId": item.s_warehouse,
 					"TargetWarehouseId": item.t_warehouse,
+					"MaterialName": item.item_name,
 					"MaterialQuantity": item.qty,
 					"MaterialUnit": item.stock_uom,
 					"IsFinishedGoods": item.is_finished_item,
