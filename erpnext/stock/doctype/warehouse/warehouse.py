@@ -81,17 +81,17 @@ class Warehouse(NestedSet):
 			sig_graph_public_key = frappe.get_cached_value("Customer", self.customer, "siggraphcustomerpublickey")
 			external_name = frappe.get_cached_value("Customer", self.customer, "customer_name")
 		elif warehouse_type == "Sent From External" or warehouse_type == 'Received From External':
+			root_suppliers_names = frappe.get_cached_value("Supplier", self.supplier, "original_suppliers_name")
 			sig_graph_public_key = frappe.get_cached_value("Supplier", self.supplier, "siggraph_supplier_public_key")
 			external_name = frappe.get_cached_value("Supplier", self.supplier, "supplier_name")
 			if warehouse_type == "Received From External":
-				root_suppliers = frappe.get_cached_value("Supplier", self.supplier, "custom_root_supplier")
-				if len(root_suppliers) == 0:
-					frappe.throw(_('root supplier not found'))
-				for supplier in root_suppliers:
-					root_supplier_public_signing_keys.append(supplier.public_signing_keys.split(','))
+				if root_suppliers_names is None or len(root_suppliers_names) == 0:
+					frappe.throw(_('root supplier is required'))
+				root_suppliers_names = root_suppliers_names.split(',')
+				for name in root_suppliers_names:
+					root_supplier_key = frappe.get_cached_value("Supplier", name, "siggraph_supplier_public_key")
+					root_supplier_public_signing_keys.append(root_supplier_key.split(','))
 		sig_graph_public_key = sig_graph_public_key.split(",")
-		print(supplier)
-		print('supplier')
 		make_post_request(siggraph_server_url + '/erpnext/warehouse/update_event/validate', json={
 			"WarehouseId": self.name,
 			"WarehouseName": self.warehouse_name,
@@ -119,14 +119,16 @@ class Warehouse(NestedSet):
 			sig_graph_public_key = frappe.get_cached_value("Customer", self.customer, "siggraphcustomerpublickey")
 			external_name = frappe.get_cached_value("Customer", self.customer, "customer_name")
 		elif warehouse_type == "Sent From External" or warehouse_type == 'Received From External':
+			root_suppliers_names = frappe.get_cached_value("Supplier", self.supplier, "original_suppliers_name")
 			sig_graph_public_key = frappe.get_cached_value("Supplier", self.supplier, "siggraph_supplier_public_key")
 			external_name = frappe.get_cached_value("Supplier", self.supplier, "supplier_name")
 			if warehouse_type == "Received From External":
-				root_suppliers = frappe.get_cached_value("Supplier", self.supplier, "custom_root_supplier")
-				if len(root_suppliers) == 0:
-					frappe.throw(_('root supplier not found'))
-				for supplier in root_suppliers:
-					root_supplier_public_signing_keys.append(supplier.public_signing_keys.split(','))
+				if root_suppliers_names is None or len(root_suppliers_names) == 0:
+					frappe.throw(_('root supplier is required'))
+				root_suppliers_names = root_suppliers_names.split(',')
+				for name in root_suppliers_names:
+					root_supplier_key = frappe.get_cached_value("Supplier", name, "siggraph_supplier_public_key")
+					root_supplier_public_signing_keys.append(root_supplier_key.split(','))
 		sig_graph_public_key = sig_graph_public_key.split(",")
 
 		make_post_request(siggraph_server_url + '/erpnext/warehouse/update_event', json={

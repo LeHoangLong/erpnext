@@ -50,6 +50,7 @@ class Supplier(TransactionBase):
 		mobile_no: DF.ReadOnly | None
 		naming_series: DF.Literal["SUP-.YYYY.-"]
 		on_hold: DF.Check
+		original_suppliers_name: DF.Text | None
 		payment_terms: DF.Link | None
 		portal_users: DF.Table[PortalUser]
 		prevent_pos: DF.Check
@@ -127,6 +128,12 @@ class Supplier(TransactionBase):
 
 	def validate(self):
 		self.flags.is_new_doc = self.is_new()
+		root_suppliers_name = self.original_suppliers_name
+		if root_suppliers_name != "" and root_suppliers_name is not None:
+			root_suppliers_names = root_suppliers_name.split(",")
+			for name in root_suppliers_names:
+				# verify that supplier exists
+				frappe.get_doc("Supplier", name)
 
 		# validation for Naming Series mandatory field...
 		if frappe.defaults.get_global_default("supp_master_name") == "Naming Series":
