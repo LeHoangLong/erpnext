@@ -97,6 +97,7 @@ class StockLedgerEntry(Document):
 					"MaterialUnit": item.stock_uom,
 					"IsFinishedGoods": item.is_finished_item,
 					"IsCancellation": item.docstatus == 2,
+					"StockEntryId": stock_entry.get("name"),
 					"StockEntryDetailDescription": item.description,
 				})
 			except Exception as exc:
@@ -225,6 +226,7 @@ class StockLedgerEntry(Document):
 					"MaterialUnit": item.stock_uom,
 					"MaterialName": item.item_code,
 					"IsFinishedGoods": item.is_finished_item,
+					"StockEntryId": stock_entry.get("name"),
 					"StockEntryDetailId": item.name,
 					"BatchNumber": item.serial_and_batch_bundle,
 					"StockEntryDetailDescription": item.description,
