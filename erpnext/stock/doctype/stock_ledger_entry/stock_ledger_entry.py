@@ -100,7 +100,7 @@ class StockLedgerEntry(Document):
 					"StockEntryId": stock_entry.get("name"),
 					"StockEntryDetailDescription": item.description,
 				}, headers={
-					"idempotency-key": "validate:" + item.name,
+					"idempotency-key": "validate:" + str(item.docstatus) + item.name,
 				})
 			except Exception as exc:
 				frappe.throw("Siggraph error", title=_(exc.response.text))
@@ -228,12 +228,13 @@ class StockLedgerEntry(Document):
 					"MaterialUnit": item.stock_uom,
 					"MaterialName": item.item_code,
 					"IsFinishedGoods": item.is_finished_item,
+					"IsCancellation": item.docstatus == 2,
 					"StockEntryId": stock_entry.get("name"),
 					"StockEntryDetailId": item.name,
 					"BatchNumber": item.serial_and_batch_bundle,
 					"StockEntryDetailDescription": item.description,
 				}, headers={
-					"idempotency-key": "on_submit:" + item.name,
+					"idempotency-key": "on_submit:" + str(item.docstatus) + item.name,
 				})
 			except Exception as exc:
 				frappe.throw(exc.response.text, title=_(exc.response.text))
